@@ -1,3 +1,4 @@
+
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
@@ -26,6 +27,4 @@ if (typeof window !== "undefined") {
 export const auth = getAuth(app);
 
 export default app;
-
-
 
