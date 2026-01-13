@@ -1,9 +1,9 @@
 import axios, { AxiosInstance } from "axios";
 
-// Ensure BACKEND_URL is defined
-const baseURL = process.env.BACKEND_URL;
+const baseURL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 if (!baseURL) {
-  throw new Error("BACKEND_URL is not defined in environment variables");
+  throw new Error("NEXT_PUBLIC_BACKEND_URL is not defined");
 }
 
 const axiosInstance: AxiosInstance = axios.create({
