@@ -7,7 +7,6 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
-  User as FirebaseUser,
 } from "firebase/auth";
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { auth } from "./firebase";
@@ -43,7 +42,7 @@ interface AuthContextType {
   }) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
-  googlesignin: () => void;
+  googlesignin: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -73,7 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             setUser(res.data);
             localStorage.setItem("twitter-user", JSON.stringify(res.data));
           }
-        } catch (err: unknown) {
+        } catch (err) {
           console.error("Failed to fetch user:", err);
         }
       } else {
@@ -100,8 +99,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           localStorage.setItem("twitter-user", JSON.stringify(res.data));
         }
       }
-    } catch (err: unknown) {
-      if (err instanceof Error) console.error("Login error:", err.message);
+    } catch (err) {
+      console.error("Login error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -139,8 +138,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setUser(res.data);
         localStorage.setItem("twitter-user", JSON.stringify(res.data));
       }
-    } catch (err: unknown) {
-      if (err instanceof Error) console.error("Signup error:", err.message);
+    } catch (err) {
+      console.error("Signup error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -174,8 +173,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setUser(updatedUser);
         localStorage.setItem("twitter-user", JSON.stringify(updatedUser));
       }
-    } catch (err: unknown) {
-      if (err instanceof Error) console.error("Profile update error:", err.message);
+    } catch (err) {
+      console.error("Profile update error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -197,38 +196,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           params: { email: firebaseUser.email },
         });
         userData = res.data;
-      } catch (err: unknown) {
-        if (firebaseUser.email) {
-          const newUser: Partial<User> = {
-            username: firebaseUser.email.split("@")[0],
-            displayName: firebaseUser.displayName || "User",
-            avatar:
-              firebaseUser.photoURL ||
-              "https://images.pexels.com/photos/1139743/pexels-photo-1139743.jpeg?auto=compress&cs=tinysrgb&w=400",
-            email: firebaseUser.email,
-            joinedDate: new Date().toLocaleDateString("en-US", {
-              month: "long",
-              year: "numeric",
-            }),
-            bio: "",
-            location: "",
-            website: "",
-          };
+      } catch {
+        const newUser: Partial<User> = {
+          username: firebaseUser.email.split("@")[0],
+          displayName: firebaseUser.displayName || "User",
+          avatar:
+            firebaseUser.photoURL ||
+            "https://images.pexels.com/photos/1139743/pexels-photo-1139743.jpeg?auto=compress&cs=tinysrgb&w=400",
+          email: firebaseUser.email,
+          joinedDate: new Date().toLocaleDateString("en-US", {
+            month: "long",
+            year: "numeric",
+          }),
+          bio: "",
+          location: "",
+          website: "",
+        };
 
-          const registerRes = await axiosInstance.post<User>("/register", newUser);
-          userData = registerRes.data;
-        }
+        const registerRes = await axiosInstance.post<User>("/register", newUser);
+        userData = registerRes.data;
       }
 
       if (userData) {
         setUser(userData);
         localStorage.setItem("twitter-user", JSON.stringify(userData));
       } else {
-        throw new Error("Login/Register failed: No user data returned");
+        throw new Error("Login/Register failed");
       }
-    } catch (err: unknown) {
-      if (err instanceof Error) console.error("Google Sign-In Error:", err.message);
-      alert((err as any)?.response?.data?.message || (err as Error).message || "Login failed");
+    } catch (err) {
+      console.error("Google Sign-In Error:", err);
+      alert("Google sign-in failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
