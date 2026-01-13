@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, Analytics } from "firebase/analytics";
 
 // Your Firebase config (ONLY the keys here)
 const firebaseConfig = {
@@ -17,7 +17,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 // Optional: Analytics (only works in browser)
-let analytics: any = null;
+export let analytics: Analytics | null = null;
 if (typeof window !== "undefined") {
   analytics = getAnalytics(app);
 }
@@ -26,4 +26,3 @@ if (typeof window !== "undefined") {
 export const auth = getAuth(app);
 
 export default app;
-
